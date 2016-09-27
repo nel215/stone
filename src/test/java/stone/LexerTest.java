@@ -7,10 +7,12 @@ import org.junit.Assert;
 import org.junit.Test;
 
 public class LexerTest {
-    @Test public void testLexer() {
+    @Test public void testLexer() throws ParseException{
         Reader r = new StringReader("123");
         Lexer l = new Lexer(r);
-        Assert.assertEquals(l.read(), Token.EOF);
+        Token t = l.read();
+        Assert.assertNotEquals(t, Token.EOF);
+        Assert.assertEquals(t.getText(), "123");
     }
 
 }
