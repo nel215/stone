@@ -67,6 +67,7 @@ public class Lexer{
                 throw new ParseException("bad token at line " + lineNo);
             }
         }
+        queue.add(new IdToken(lineNo, Token.EOL));
 
     }
 
@@ -93,6 +94,19 @@ public class Lexer{
         @Override
         public String getText() {
             return Integer.toString(value);
+        }
+
+    }
+
+    protected static class IdToken extends Token{
+        private String text;
+        protected IdToken(int line, String id){
+            super(line);
+            text = id;
+        }
+        @Override
+        public String getText() {
+            return text;
         }
 
     }
