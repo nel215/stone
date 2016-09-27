@@ -76,7 +76,6 @@ public class Lexer{
         if(m==null)return; // if space
         if(matcher.group(2)!=null)return; // if comment
         if(matcher.group(3)!=null){
-            System.out.println(m);
             queue.add(new NumToken(lineNo, Integer.parseInt(m)));
         }else if(matcher.group(4)!=null){
             queue.add(Token.EOF);
