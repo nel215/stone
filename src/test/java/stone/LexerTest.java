@@ -19,6 +19,18 @@ public class LexerTest {
         Assert.assertEquals(t, Token.EOF);
     }
 
+    @Test public void testString() throws ParseException{
+        Reader r = new StringReader("\"test\"");
+        Lexer l = new Lexer(r);
+        Token t = l.read();
+        Assert.assertNotEquals(t, Token.EOF);
+        Assert.assertEquals(t.getText(), "test");
+        t = l.read();
+        Assert.assertEquals(t.getText(), Token.EOL);
+        t = l.read();
+        Assert.assertEquals(t, Token.EOF);
+    }
+
 }
 
 

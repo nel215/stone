@@ -77,14 +77,33 @@ public class Lexer{
         if(matcher.group(2)!=null)return; // if comment
         if(matcher.group(3)!=null){
             queue.add(new NumToken(lineNo, Integer.parseInt(m)));
-        }else if(matcher.group(4)!=null){
-            queue.add(Token.EOF);
-        }else{
+        } else if (matcher.group(4) != null) {
+            queue.add(new StrToken(lineNo, toStringLiteral(m)));
+        } else {
             queue.add(Token.EOF);
         }
     }
 
-    protected static class NumToken extends Token{
+    protected String toStringLiteral(String s) {
+        StringBuilder sb = new StringBuilder();
+        int len = s.length() - 1;
+        for (int i = 1; i < len; i++) {
+            char c = s.charAt(i);
+            if (c == '\\' && i + 1 < len) {
+                char c2 = s.charAt(i + 1);
+                if (c2 == '"' || c2 == '\\') {
+                    c = s.charAt(++i);
+                } else if (c2 == 'n') {
+                    ++i;
+                    c = '\n';
+                }
+            }
+            sb.append(c);
+        }
+        return sb.toString();
+    }
+
+    protected static class NumToken extends Token {
         private int value;
         protected NumToken(int line, int v){
             super(line);
