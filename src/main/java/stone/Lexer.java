@@ -118,6 +118,11 @@ public class Lexer {
             return Integer.toString(value);
         }
 
+        @Override
+        public boolean isNumber() {
+            return true;
+        }
+
     }
 
     protected static class StrToken extends Token {

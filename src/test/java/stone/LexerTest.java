@@ -14,8 +14,10 @@ public class LexerTest {
         Token t = l.read();
         Assert.assertNotEquals(t, Token.EOF);
         Assert.assertEquals(t.getText(), "123");
+        Assert.assertEquals(t.isNumber(), true);
         t = l.read();
         Assert.assertEquals(t.getText(), Token.EOL);
+        Assert.assertEquals(t.isNumber(), false);
         t = l.read();
         Assert.assertEquals(t, Token.EOF);
     }
@@ -27,8 +29,10 @@ public class LexerTest {
         Token t = l.read();
         Assert.assertNotEquals(t, Token.EOF);
         Assert.assertEquals(t.getText(), "test");
+        Assert.assertEquals(t.isNumber(), false);
         t = l.read();
         Assert.assertEquals(t.getText(), Token.EOL);
+        Assert.assertEquals(t.isNumber(), false);
         t = l.read();
         Assert.assertEquals(t, Token.EOF);
     }

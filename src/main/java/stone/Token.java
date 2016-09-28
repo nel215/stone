@@ -14,6 +14,10 @@ public abstract class Token {
         return lineNumber;
     }
 
+    public boolean isNumber() {
+        return false;
+    }
+
     public String getText() {
         return "";
     }
