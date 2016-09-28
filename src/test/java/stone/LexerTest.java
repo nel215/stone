@@ -7,7 +7,8 @@ import org.junit.Assert;
 import org.junit.Test;
 
 public class LexerTest {
-    @Test public void testNumber() throws ParseException{
+    @Test
+    public void testNumber() throws ParseException {
         Reader r = new StringReader("123");
         Lexer l = new Lexer(r);
         Token t = l.read();
@@ -19,7 +20,8 @@ public class LexerTest {
         Assert.assertEquals(t, Token.EOF);
     }
 
-    @Test public void testString() throws ParseException{
+    @Test
+    public void testString() throws ParseException {
         Reader r = new StringReader("\"test\"");
         Lexer l = new Lexer(r);
         Token t = l.read();
@@ -32,5 +34,3 @@ public class LexerTest {
     }
 
 }
-
-

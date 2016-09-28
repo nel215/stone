@@ -7,34 +7,34 @@ import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class Lexer{
+public class Lexer {
     private static String commentPat = "(//.*)";
     private static String numPat = "([0-9]+)";
     private static String strPat = "(\"(\\\\\"|\\\\\\\\|\\\\n|[^\"])*\")";
     private static String idPat = "[A-Z_a-z][A-Z_a-z0-9]*|==|<=|>=|&&|\\|\\||\\p{Punct}";
-    public static String regexPat = "\\s*("+commentPat+"|"+numPat+"|"+strPat+"|"+idPat+")?";
+    public static String regexPat = "\\s*(" + commentPat + "|" + numPat + "|" + strPat + "|" + idPat + ")?";
     private Pattern pattern = Pattern.compile(regexPat);
     private boolean hasMore;
     private ArrayList<Token> queue;
     private LineNumberReader reader;
 
-    Lexer(Reader r){
+    Lexer(Reader r) {
         reader = new LineNumberReader(r);
         hasMore = true;
         queue = new ArrayList<Token>();
     }
 
-    public Token read() throws ParseException{
-        if(fillQueue(0)){
+    public Token read() throws ParseException {
+        if (fillQueue(0)) {
             return queue.remove(0);
-        }else{
+        } else {
             return Token.EOF;
         }
     }
 
-    private boolean fillQueue(int i) throws ParseException{
-        while(i >= queue.size()){
-            if(!hasMore){
+    private boolean fillQueue(int i) throws ParseException {
+        while (i >= queue.size()) {
+            if (!hasMore) {
                 return false;
             }
             readLine();
@@ -42,14 +42,14 @@ public class Lexer{
         return true;
     }
 
-    protected void readLine() throws ParseException{
+    protected void readLine() throws ParseException {
         String line;
-        try{
+        try {
             line = reader.readLine();
-        }catch(IOException e){
+        } catch (IOException e) {
             throw new ParseException(e);
         }
-        if(line==null){
+        if (line == null) {
             hasMore = false;
             return;
         }
@@ -58,12 +58,12 @@ public class Lexer{
         matcher.useTransparentBounds(true).useAnchoringBounds(false);
         int pos = 0;
         int endPos = line.length();
-        while(pos < endPos){
+        while (pos < endPos) {
             matcher.region(pos, endPos);
-            if(matcher.lookingAt()){
+            if (matcher.lookingAt()) {
                 addToken(lineNo, matcher);
                 pos = matcher.end();
-            }else{
+            } else {
                 throw new ParseException("bad token at line " + lineNo);
             }
         }
@@ -71,11 +71,13 @@ public class Lexer{
 
     }
 
-    protected void addToken(int lineNo, Matcher matcher){
+    protected void addToken(int lineNo, Matcher matcher) {
         String m = matcher.group(1);
-        if(m==null)return; // if space
-        if(matcher.group(2)!=null)return; // if comment
-        if(matcher.group(3)!=null){
+        if (m == null)
+            return; // if space
+        if (matcher.group(2) != null)
+            return; // if comment
+        if (matcher.group(3) != null) {
             queue.add(new NumToken(lineNo, Integer.parseInt(m)));
         } else if (matcher.group(4) != null) {
             queue.add(new StrToken(lineNo, toStringLiteral(m)));
@@ -105,10 +107,12 @@ public class Lexer{
 
     protected static class NumToken extends Token {
         private int value;
-        protected NumToken(int line, int v){
+
+        protected NumToken(int line, int v) {
             super(line);
             value = v;
         }
+
         @Override
         public String getText() {
             return Integer.toString(value);
@@ -116,12 +120,29 @@ public class Lexer{
 
     }
 
-    protected static class IdToken extends Token{
+    protected static class StrToken extends Token {
+        private String literal;
+
+        protected StrToken(int line, String str) {
+            super(line);
+            literal = str;
+        }
+
+        @Override
+        public String getText() {
+            return literal;
+        }
+
+    }
+
+    protected static class IdToken extends Token {
         private String text;
-        protected IdToken(int line, String id){
+
+        protected IdToken(int line, String id) {
             super(line);
             text = id;
         }
+
         @Override
         public String getText() {
             return text;
