@@ -15,5 +15,6 @@ public class ParserTest {
         Lexer l = new Lexer(new StringReader("1 + 2"));
         ASTree ast = adder.parse(l);
         Assert.assertNotNull(ast);
+        Assert.assertEquals("(1 + 2)", ast.toString());
     }
 }
