@@ -18,6 +18,10 @@ public abstract class Token {
         return false;
     }
 
+    public boolean isIdentifier() {
+        return false;
+    }
+
     public String getText() {
         return "";
     }

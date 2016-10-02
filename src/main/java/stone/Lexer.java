@@ -153,6 +153,11 @@ public class Lexer {
             return text;
         }
 
+        @Override
+        public boolean isIdentifier() {
+            return true;
+        }
+
     }
 
 }
