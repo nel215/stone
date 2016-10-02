@@ -2,6 +2,7 @@ package stone;
 
 import java.io.StringReader;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 import stone.ast.ASTree;
@@ -13,5 +14,6 @@ public class ParserTest {
         Parser adder = Parser.rule().number().token("+").number();
         Lexer l = new Lexer(new StringReader("1 + 2"));
         ASTree ast = adder.parse(l);
+        Assert.assertNotNull(ast);
     }
 }

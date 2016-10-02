@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import stone.ast.ASTLeaf;
+import stone.ast.ASTList;
 import stone.ast.ASTree;
 
 public class Parser {
@@ -14,23 +15,36 @@ public class Parser {
     }
 
     protected static abstract class AToken extends Element {
+        protected Factory factory;
+
         protected AToken(Class<? extends ASTLeaf> type) {
             if (type == null) {
                 type = ASTLeaf.class;
             }
-            // TODO: factory
+            factory = Factory.get(type, Token.class);
         }
 
         protected void parse(Lexer lexer, List<ASTree> res) throws ParseException {
-            lexer.read();
-            // TODO: test and construct tree
+            Token t = lexer.read();
+            if (!test(t)) {
+                throw new ParseException(t);
+            }
+            ASTree leaf = factory.make(t);
+            res.add(leaf);
         }
+
+        protected abstract boolean test(Token t);
     }
 
     protected static class NumToken extends AToken {
 
         protected NumToken(Class<? extends ASTLeaf> type) {
             super(type);
+        }
+
+        @Override
+        protected boolean test(Token t) {
+            return t.isNumber();
         }
 
     }
@@ -43,9 +57,22 @@ public class Parser {
         }
 
         @Override
-        protected void parse(Lexer lexer, List<ASTree> res) {
+        protected void parse(Lexer lexer, List<ASTree> res) throws ParseException {
+            Token t = lexer.read();
+            if (t.isIdentifier()) {
+                for (String token : tokens) {
+                    if (!token.equals(t.getText())) {
+                        continue;
+                    }
+                    res.add(new ASTLeaf(t));
+                    return;
+                }
+            }
+            if (tokens.length > 0) {
+                throw new ParseException(tokens[0] + " expected.", t);
+            }
+            throw new ParseException(t);
         }
-
     }
 
     public static final String factoryName = "create";
@@ -74,8 +101,7 @@ public class Parser {
                     if (results.size() == 1) {
                         return results.get(0);
                     }
-                    return null;
-                    // TODO: return ASTList
+                    return new ASTList(results);
                 }
             };
 
