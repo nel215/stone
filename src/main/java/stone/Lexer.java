@@ -82,7 +82,7 @@ public class Lexer {
         } else if (matcher.group(4) != null) {
             queue.add(new StrToken(lineNo, toStringLiteral(m)));
         } else {
-            queue.add(Token.EOF);
+            queue.add(new IdToken(lineNo, m));
         }
     }
 
