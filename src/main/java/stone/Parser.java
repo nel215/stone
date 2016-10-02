@@ -1,5 +1,7 @@
 package stone;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -8,7 +10,7 @@ import stone.ast.ASTree;
 
 public class Parser {
     protected static abstract class Element {
-        protected abstract void parse(Lexer lexer) throws ParseException;
+        protected abstract void parse(Lexer lexer, List<ASTree> res) throws ParseException;
     }
 
     protected static abstract class AToken extends Element {
@@ -19,7 +21,7 @@ public class Parser {
             // TODO: factory
         }
 
-        protected void parse(Lexer lexer) throws ParseException {
+        protected void parse(Lexer lexer, List<ASTree> res) throws ParseException {
             lexer.read();
             // TODO: test and construct tree
         }
@@ -41,12 +43,72 @@ public class Parser {
         }
 
         @Override
-        protected void parse(Lexer lexer) {
+        protected void parse(Lexer lexer, List<ASTree> res) {
         }
 
     }
 
+    public static final String factoryName = "create";
+
+    protected static abstract class Factory {
+        protected abstract ASTree make0(Object arg) throws Exception;
+
+        protected ASTree make(Object arg) {
+            try {
+                return make0(arg);
+            } catch (IllegalArgumentException e1) {
+                throw e1;
+            } catch (Exception e2) {
+                throw new RuntimeException(e2);
+            }
+        }
+
+        protected static Factory getForASTList(Class<? extends ASTree> clazz) {
+            Factory f = get(clazz, List.class);
+            if (f != null) {
+                return f;
+            }
+            return new Factory() {
+                protected ASTree make0(Object arg) throws Exception {
+                    List<ASTree> results = (List<ASTree>) arg;
+                    if (results.size() == 1) {
+                        return results.get(0);
+                    }
+                    return null;
+                    // TODO: return ASTList
+                }
+            };
+
+        }
+
+        protected static Factory get(Class<? extends ASTree> clazz, Class<?> argType) {
+            if (clazz == null) {
+                return null;
+            }
+            try {
+                final Method m = clazz.getMethod(factoryName, new Class<?>[] { argType });
+                return new Factory() {
+                    protected ASTree make0(Object arg) throws Exception {
+                        return (ASTree) m.invoke(null, arg);
+                    }
+                };
+            } catch (NoSuchMethodException e) {
+            }
+            try {
+                final Constructor<? extends ASTree> c = clazz.getConstructor(argType);
+                return new Factory() {
+                    protected ASTree make0(Object arg) throws Exception {
+                        return c.newInstance(arg);
+                    }
+                };
+            } catch (NoSuchMethodException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
     protected List<Element> elements;
+    protected Factory factory;
 
     public Parser(Class<? extends ASTree> clazz) {
         reset(clazz);
@@ -54,6 +116,7 @@ public class Parser {
 
     public Parser reset(Class<? extends ASTree> clazz) {
         elements = new ArrayList<Element>();
+        factory = Factory.getForASTList(clazz);
         return this;
     }
 
@@ -65,10 +128,12 @@ public class Parser {
         return new Parser(clazz);
     }
 
-    public void parse(Lexer lexer) throws ParseException {
+    public ASTree parse(Lexer lexer) throws ParseException {
+        ArrayList<ASTree> results = new ArrayList<ASTree>();
         for (Element e : elements) {
-            e.parse(lexer);
+            e.parse(lexer, results);
         }
+        return factory.make(results);
     }
 
     public Parser number() {
