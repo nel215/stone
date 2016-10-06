@@ -12,6 +12,41 @@ import stone.ast.ASTree;
 public class Parser {
     protected static abstract class Element {
         protected abstract void parse(Lexer lexer, List<ASTree> res) throws ParseException;
+
+        protected abstract boolean match(Lexer lexer) throws ParseException;
+    }
+
+    protected static class OrTree extends Element {
+
+        private Parser[] parsers;
+
+        public OrTree(Parser[] p) {
+            parsers = p;
+        }
+
+        @Override
+        protected void parse(Lexer lexer, List<ASTree> res) throws ParseException {
+            Parser p = choose(lexer);
+            if (p == null) {
+                throw new ParseException(lexer.peek(0));
+            }
+            res.add(p.parse(lexer));
+        }
+
+        protected Parser choose(Lexer lexer) throws ParseException {
+            for (Parser p : parsers) {
+                if (p.match(lexer)) {
+                    return p;
+                }
+            }
+            return null;
+        }
+
+        @Override
+        protected boolean match(Lexer lexer) throws ParseException {
+            return choose(lexer) != null;
+        }
+
     }
 
     protected static abstract class AToken extends Element {
@@ -47,6 +82,18 @@ public class Parser {
             return t.isNumber();
         }
 
+        @Override
+        protected void parse(Lexer lexer, List<ASTree> res) throws ParseException {
+            // TODO Auto-generated method stub
+            super.parse(lexer, res);
+        }
+
+        @Override
+        protected boolean match(Lexer lexer) throws ParseException {
+            // TODO Auto-generated method stub
+            return false;
+        }
+
     }
 
     protected static class Leaf extends Element {
@@ -72,6 +119,21 @@ public class Parser {
                 throw new ParseException(tokens[0] + " expected.", t);
             }
             throw new ParseException(t);
+        }
+
+        @Override
+        protected boolean match(Lexer lexer) throws ParseException {
+            // TODO Auto-generated method stub
+            return false;
+        }
+    }
+
+    protected static class Skip extends Leaf {
+        protected Skip(String[] pat) {
+            super(pat);
+        }
+
+        protected void find(List<ASTree> res, Token t) {
         }
     }
 
@@ -140,6 +202,14 @@ public class Parser {
         reset(clazz);
     }
 
+    public boolean match(Lexer lexer) throws ParseException {
+        if (elements.size() == 0) {
+            return true;
+        }
+        Element e = elements.get(0);
+        return e.match(lexer);
+    }
+
     public Parser reset(Class<? extends ASTree> clazz) {
         elements = new ArrayList<Element>();
         factory = Factory.getForASTList(clazz);
@@ -173,6 +243,16 @@ public class Parser {
 
     public Parser token(String... pat) {
         elements.add(new Leaf(pat));
+        return this;
+    }
+
+    public Parser sep(String... pat) {
+        elements.add(new Skip(pat));
+        return this;
+    }
+
+    public Parser or(Parser... p) {
+        elements.add(new OrTree(p));
         return this;
     }
 
