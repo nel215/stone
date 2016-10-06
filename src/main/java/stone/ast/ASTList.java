@@ -10,6 +10,10 @@ public class ASTList extends ASTree {
         children = list;
     }
 
+    public ASTree child(int i) {
+        return children.get(i);
+    }
+
     @Override
     public Iterator<ASTree> iterator() {
         // TODO Auto-generated method stub
